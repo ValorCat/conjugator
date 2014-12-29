@@ -8,13 +8,17 @@ local verb_data = {
 		raw = {
 			caber = {yo = "quepo"};
 			dar = {yo = "doy", vos = "dais"};
+			decir = {yo = "digo", tu = "dices", ud = "dice", uds = "dicen"};
 			estar = {yo = "estoy", tu = "estás", ud = "está", uds = "están"};
 			hacer = {yo = "hago"};
 			ir = {yo = "voy", tu = "vas", ud = "va", nos = "vamos", vos = "vais", uds = "van"};
 			saber = {yo = "sé"};
 			ser = {yo = "soy", tu = "eres", ud = "es", nos = "somos", vos = "sois", uds = "son"};
-			ver = {yo = "veo"}; };
-		go = {"caer", "poner", "salir", "tener", "traer", "valer", "venir"}; };
+			servir = {yo = "sirvo", tu = "sirves", ud = "sirve", uds = "sirven"};
+			ver = {yo = "veo"};
+			vestir = {yo = "visto", tu = "vistes", ud = "viste", uds = "visten"}; };
+		stem = {"acertar", "acordar", "acostar", "advertir", "almorzar", "aprobar", "atender", "atraversar", "calentar", "cerrar", "colgar", "comenzar", "competir",  "confesar", "contar", "convertir", "costar", "defender", "demostrar", "despedir", "despertar", "devolver", "divertir", "dormir", "empezar", "encender", "encontrar", "entender", "enterrar", "envolver", "fregar", "forzar", "herir", "hervir", "impedir", "medir", "mentir", "merendar", "morder", "morir", "mostrar", "mover", "negar",  "pedir", "pensar", "perder", "poder", "preferir", "probar", "querer", "recordar", "regar", "repetir", "resolver", "rogar", "soler", "sonar", "soñar", "sugerir", "temblar", "tender", "tener", "tropezar", "venir", "verter"};
+		go = {"caer", "poner", "salir", "tener", "tostar", "traer", "valer", "venir", "volar", "volver"}; };
 	-- past preterite
 	pret = {
 		ar = {yo = "é", tu = "aste", ud = "ó", nos = "amos", vos = "asteis", uds = "aron"};
@@ -44,16 +48,16 @@ local verb_data = {
 		ir = {}; }; }
 
 local tenses = {
-	pres = {"pres", "present", "presente"};
-	pret = {"pret", "past", "pasado", "preterit", "preterite", "preterito", "pretérito"};
-	imp = {"imp", "imperfect", "imperfecto"};
-	fut = {"fut", "future", "futuro"};
-	con = {"con", "cond", "conditional", "condicional"};
-	subj = {"sub", "subj", "subjunctive", "subjunctivo"}; }
+	pres = {"", "pres", "present", "presente"};
+	pret = {"p", "pret", "past", "pasado", "preterit", "preterite", "preterito", "pretérito"};
+	imp = {"i", "imp", "imperfect", "imperfecto"};
+	fut = {"f", "fut", "future", "futuro"};
+	con = {"c", "con", "cond", "conditional", "condicional"};
+	subj = {"s", "sub", "subj", "subjunctive", "subjunctivo"}; }
 
 -- replaces accented chars with normal counterparts
 local function noacc(str)
-	local accents = {["á"] = "a", ["é"] = "e", ["í"] = "i", ["ó"] = "o", ["ú"] = "u", ["ü"] = "u"}
+	local accents = {["á"] = "a", ["é"] = "e", ["í"] = "i", ["ñ"] = "n", ["ó"] = "o", ["ú"] = "u", ["ü"] = "u"}
 	return (str:gsub("(%a)", accents))
 end	
 
@@ -72,7 +76,19 @@ local function ctype(char)
 	end
 end
 
-print("Enter a tense:")
+-- searchs for item in array
+local function contains(tab, itm)
+	if type(tab) == "table" then
+		for _, val in pairs(tab) do
+			if itm == val then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+io.write("Enter a tense: ")
 local tense = io.read()
 
 -- verify tense
@@ -93,7 +109,7 @@ if not found then
 end
 local lookup = verb_data[tense]
 
-print("Enter a verb:")
+io.write("Enter a verb: ")
 local verb = io.read()
 local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
 local table = {}
@@ -130,16 +146,39 @@ end
 
 -- pres: default, stem, go
 
--- handle 'go' verbs
-if lookup.go then
-	for _, item in pairs(lookup.go) do
-		if verb == item then
-			if ctype(verb:sub(-3, -3)) == "consonant" then
-				table.yo = verb:sub(1, -3) .. "go"
-			else
-				table.yo = verb:sub(1, -3) .. "igo"
+-- handle stem changers (eg pensar -> piensa)
+if contains(lookup.stem, verb) then
+	local change = {"e", "ie"}
+	
+	-- if ending in 'edir' or 'etir'
+	if (verb:sub(-4) == "edir") or (verb:sub(-4) == "etir") then
+		change[2] = "i"
+	end
+	
+	-- if penultimate vowel is 'o'
+	for i = #root, 1, -1 do
+		local char = verb:sub(i, i)
+		if ctype(char) == "vowel" then
+			if char == "o" then
+				change = {"o", "ue"}
 			end
+			break
 		end
+	end
+	
+	-- change the stem
+	for _, form in pairs({"yo", "tu", "ud", "uds"}) do
+		local repl = root:reverse():gsub(change[1]:reverse(), change[2]:reverse(), 1):reverse()
+		table[form] = table[form]:gsub(root, repl)
+	end
+end		
+
+-- handle 'go' verbs
+if contains(lookup.go, verb) then
+	if ctype(root:sub(-1)) == "consonant" then
+		table.yo = root .. "go"
+	else
+		table.yo = root .. "igo"
 	end
 end
 
