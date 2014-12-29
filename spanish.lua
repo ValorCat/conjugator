@@ -1,31 +1,44 @@
 
-local suffixes = {
-	pres = { -- present indicative
+local verb_data = {
+	-- present indicative
+	pres = {
 		ar = {yo = "o", tu = "as", ud = "a", nos = "amos", vos = "áis", uds = "an"};
 		er = {tu = "es", ud = "e", nos = "emos", vos = "éis", uds = "en"};
 		ir = {nos = "imos", vos = "ís"};
 		raw = {
+			caber = {yo = "quepo"};
+			dar = {yo = "doy", vos = "dais"};
 			estar = {yo = "estoy", tu = "estás", ud = "está", uds = "están"};
-			ser = {yo = "soy", tu = "eres", ud = "es", nos = "somos", vos = "sois", uds = "son"}; };
-	}; pret = { -- past preterite
+			hacer = {yo = "hago"};
+			ir = {yo = "voy", tu = "vas", ud = "va", nos = "vamos", vos = "vais", uds = "van"};
+			saber = {yo = "sé"};
+			ser = {yo = "soy", tu = "eres", ud = "es", nos = "somos", vos = "sois", uds = "son"};
+			ver = {yo = "veo"}; };
+		go = {"caer", "poner", "salir", "tener", "traer", "valer", "venir"}; };
+	-- past preterite
+	pret = {
 		ar = {yo = "é", tu = "aste", ud = "ó", nos = "amos", vos = "asteis", uds = "aron"};
 		er = {yo = "í", tu = "iste", ud = "ió", nos = "imos", vos = "isteis", uds = "ieron"};
-		ir = {};
-	}; imp = { -- past imperfect
+		ir = {}; };
+	-- past imperfect
+	imp = {
 		ar = {yo = "aba", tu = "abas", ud = "aba", nos = "abamos", vos = "abais", uds = "aban"};
 		er = {yo = "ía", tu = "ías", ud = "ía", nos = "íamos", vos = "íais", uds = "ían"};
-		ir = {};
-	}; fut = { -- future indicative
+		ir = {}; };
+	-- future indicative
+	fut = {
 		ar = {yo = "é", tu = "ás", ud = "á", nos = "emos", vos = "éis", uds = "án"};
 		er = {};
 		ir = {};
-		use_inf = true;
-	}; con = { -- conditional
+		use_inf = true; };
+	-- conditional
+	con = {
 		ar = {yo = "ía", tu = "ías", ud = "ía", nos = "íamos", vos = "íais", uds = "ían"};
 		er = {};
 		ir = {};
-		use_inf = true;
-	}; subj = { -- present subjunctive
+		use_inf = true; };
+	-- present subjunctive
+	subj = {
 		ar = {yo = "e", tu = "es", ud = "e", nos = "emos", vos = "éis", uds = "en"};
 		er = {yo = "a", tu = "as", ud = "a", nos = "amos", vos = "áis", uds = "an"};
 		ir = {}; }; }
@@ -37,6 +50,27 @@ local tenses = {
 	fut = {"fut", "future", "futuro"};
 	con = {"con", "cond", "conditional", "condicional"};
 	subj = {"sub", "subj", "subjunctive", "subjunctivo"}; }
+
+-- replaces accented chars with normal counterparts
+local function noacc(str)
+	local accents = {["á"] = "a", ["é"] = "e", ["í"] = "i", ["ó"] = "o", ["ú"] = "u", ["ü"] = "u"}
+	return (str:gsub("(%a)", accents))
+end	
+
+-- returns consonant, vowel, or symbol
+local function ctype(char)
+	if not char:find("%a") then
+		return "symbol"
+	else
+		char = noacc(char)
+		for _, vowel in pairs({"a", "e", "i", "o", "u"}) do
+			if char == vowel then
+				return "vowel"
+			end
+		end
+		return "consonant"
+	end
+end
 
 print("Enter a tense:")
 local tense = io.read()
@@ -57,14 +91,20 @@ if not found then
 	print("Invalid tense!")
 	return false
 end
-local lookup = suffixes[tense]
+local lookup = verb_data[tense]
 
 print("Enter a verb:")
 local verb = io.read()
-local verb_type = verb:sub(-2) -- 'ar', 'er', or 'ir'
+local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
 local table = {}
 
--- get the default suffix
+-- accommodate the future and conditional's use of infinitive
+local root = verb:sub(1, -3)
+if lookup.use_inf then
+	root = verb
+end
+
+-- get default suffix
 for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
 	
 	-- inheritance ('ir' defaults to 'er' defaults to 'ar')
@@ -77,7 +117,7 @@ for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
 			
 			-- if it is defined here, use it
 			if conj then
-				table[form] = conj
+				table[form] = root .. conj
 				continue = false
 			
 			-- if it is not defined here, default to the next subtable
@@ -88,15 +128,19 @@ for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
 	end
 end
 
--- accomodate the future and conditional using the infinitive
-local root = verb:sub(1, -3)
-if lookup.use_inf then
-	root = verb
-end
+-- pres: default, stem, go
 
--- change from the suffix to the full verb
-for name, form in pairs(table) do
-	table[name] = root .. table[name]
+-- handle 'go' verbs
+if lookup.go then
+	for _, item in pairs(lookup.go) do
+		if verb == item then
+			if ctype(verb:sub(-3, -3)) == "consonant" then
+				table.yo = verb:sub(1, -3) .. "go"
+			else
+				table.yo = verb:sub(1, -3) .. "igo"
+			end
+		end
+	end
 end
 
 -- handle a full replace (eg ser in present tense)
