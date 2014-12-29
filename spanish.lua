@@ -4,35 +4,31 @@ local suffixes = {
 		ar = {yo = "o", tu = "as", ud = "a", nos = "amos", vos = "áis", uds = "an"};
 		er = {tu = "es", ud = "e", nos = "emos", vos = "éis", uds = "en"};
 		ir = {nos = "imos", vos = "ís"};
-	};
-	pret = { -- past preterite
+		raw = {
+			estar = {yo = "estoy", tu = "estás", ud = "está", uds = "están"};
+			ser = {yo = "soy", tu = "eres", ud = "es", nos = "somos", vos = "sois", uds = "son"}; };
+	}; pret = { -- past preterite
 		ar = {yo = "é", tu = "aste", ud = "ó", nos = "amos", vos = "asteis", uds = "aron"};
 		er = {yo = "í", tu = "iste", ud = "ió", nos = "imos", vos = "isteis", uds = "ieron"};
 		ir = {};
-	};
-	imp = { -- past imperfect
+	}; imp = { -- past imperfect
 		ar = {yo = "aba", tu = "abas", ud = "aba", nos = "abamos", vos = "abais", uds = "aban"};
 		er = {yo = "ía", tu = "ías", ud = "ía", nos = "íamos", vos = "íais", uds = "ían"};
 		ir = {};
-	};
-	fut = { -- future indicative
+	}; fut = { -- future indicative
 		ar = {yo = "é", tu = "ás", ud = "á", nos = "emos", vos = "éis", uds = "án"};
 		er = {};
 		ir = {};
 		use_inf = true;
-	};
-	con = { -- conditional
+	}; con = { -- conditional
 		ar = {yo = "ía", tu = "ías", ud = "ía", nos = "íamos", vos = "íais", uds = "ían"};
 		er = {};
 		ir = {};
 		use_inf = true;
-	};
-	subj = { -- present subjunctive
+	}; subj = { -- present subjunctive
 		ar = {yo = "e", tu = "es", ud = "e", nos = "emos", vos = "éis", uds = "en"};
 		er = {yo = "a", tu = "as", ud = "a", nos = "amos", vos = "áis", uds = "an"};
-		ir = {};
-	};
-}
+		ir = {}; }; }
 
 local tenses = {
 	pres = {"pres", "present", "presente"};
@@ -40,8 +36,7 @@ local tenses = {
 	imp = {"imp", "imperfect", "imperfecto"};
 	fut = {"fut", "future", "futuro"};
 	con = {"con", "cond", "conditional", "condicional"};
-	subj = {"sub", "subj", "subjunctive", "subjunctivo"};
-}
+	subj = {"sub", "subj", "subjunctive", "subjunctivo"}; }
 
 print("Enter a tense:")
 local tense = io.read()
@@ -56,31 +51,34 @@ for internal, list in pairs(tenses) do
 		end
 	end
 end
+
+-- exit on invalid tense
 if not found then
 	print("Invalid tense!")
 	return false
 end
+local lookup = suffixes[tense]
 
 print("Enter a verb:")
 local verb = io.read()
 local verb_type = verb:sub(-2) -- 'ar', 'er', or 'ir'
 local table = {}
 
--- iterate through each form
+-- get the default suffix
 for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
 	
-	-- allow defaulting ('ir' defaults to 'er' defaults to 'ar')
+	-- inheritance ('ir' defaults to 'er' defaults to 'ar')
 	local continue = false
-	for _, eff_suffix in pairs({"ir", "er", "ar"}) do
-		if (eff_suffix == verb_type) or continue then
-			continue = false
+	for _, current in pairs({"ir", "er", "ar"}) do
+		if (current == verb_type) or continue then
 			
-			-- search for the suffix in this subtable
-			local conj = suffixes[tense][eff_suffix][form]
+			-- search for the suffix in current subtable
+			local conj = lookup[current][form]
 			
 			-- if it is defined here, use it
 			if conj then
 				table[form] = conj
+				continue = false
 			
 			-- if it is not defined here, default to the next subtable
 			else
@@ -92,13 +90,20 @@ end
 
 -- accomodate the future and conditional using the infinitive
 local root = verb:sub(1, -3)
-if suffixes[tense].use_inf then
+if lookup.use_inf then
 	root = verb
 end
 
 -- change from the suffix to the full verb
 for name, form in pairs(table) do
 	table[name] = root .. table[name]
+end
+
+-- handle a full replace (eg ser in present tense)
+for form in pairs(table) do
+	if lookup.raw[verb] then
+		table[form] = lookup.raw[verb][form] or table[form]
+	end
 end
 
 print("")
