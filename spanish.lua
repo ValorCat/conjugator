@@ -88,8 +88,10 @@ local function contains(tab, itm)
 	return false
 end
 
+print("")
 io.write("Enter a tense: ")
 local tense = io.read()
+print("")
 
 -- verify tense
 local found = false
@@ -109,88 +111,90 @@ if not found then
 end
 local lookup = verb_data[tense]
 
-io.write("Enter a verb: ")
-local verb = io.read()
-local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
-local table = {}
+while 1 do
+	io.write("Enter a verb: ")
+	local verb = io.read()
+	local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
+	local table = {}
 
--- accommodate the future and conditional's use of infinitive
-local root = verb:sub(1, -3)
-if lookup.use_inf then
-	root = verb
-end
+	-- accommodate the future and conditional's use of infinitive
+	local root = verb:sub(1, -3)
+	if lookup.use_inf then
+		root = verb
+	end
 
--- get default suffix
-for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
-	
-	-- inheritance ('ir' defaults to 'er' defaults to 'ar')
-	local continue = false
-	for _, current in pairs({"ir", "er", "ar"}) do
-		if (current == verb_type) or continue then
-			
-			-- search for the suffix in current subtable
-			local conj = lookup[current][form]
-			
-			-- if it is defined here, use it
-			if conj then
-				table[form] = root .. conj
-				continue = false
-			
-			-- if it is not defined here, default to the next subtable
-			else
-				continue = true
+	-- get default suffix
+	for _, form in pairs({"yo", "tu", "ud", "nos", "vos", "uds"}) do
+		
+		-- inheritance ('ir' defaults to 'er' defaults to 'ar')
+		local continue = false
+		for _, current in pairs({"ir", "er", "ar"}) do
+			if (current == verb_type) or continue then
+				
+				-- search for the suffix in current subtable
+				local conj = lookup[current][form]
+				
+				-- if it is defined here, use it
+				if conj then
+					table[form] = root .. conj
+					continue = false
+				
+				-- if it is not defined here, default to the next subtable
+				else
+					continue = true
+				end
 			end
 		end
 	end
-end
 
--- pres: default, stem, go
+	-- pres: default, stem, go
 
--- handle stem changers (eg pensar -> piensa)
-if contains(lookup.stem, verb) then
-	local change = {"e", "ie"}
-	
-	-- if ending in 'edir' or 'etir'
-	if (verb:sub(-4) == "edir") or (verb:sub(-4) == "etir") then
-		change[2] = "i"
-	end
-	
-	-- if penultimate vowel is 'o'
-	for i = #root, 1, -1 do
-		local char = verb:sub(i, i)
-		if ctype(char) == "vowel" then
-			if char == "o" then
-				change = {"o", "ue"}
+	-- handle stem changers (eg pensar -> piensa)
+	if contains(lookup.stem, verb) then
+		local change = {"e", "ie"}
+		
+		-- if ending in 'edir' or 'etir'
+		if (verb:sub(-4) == "edir") or (verb:sub(-4) == "etir") then
+			change[2] = "i"
+		end
+		
+		-- if penultimate vowel is 'o'
+		for i = #root, 1, -1 do
+			local char = verb:sub(i, i)
+			if ctype(char) == "vowel" then
+				if char == "o" then
+					change = {"o", "ue"}
+				end
+				break
 			end
-			break
+		end
+		
+		-- change the stem
+		for _, form in pairs({"yo", "tu", "ud", "uds"}) do
+			local repl = root:reverse():gsub(change[1]:reverse(), change[2]:reverse(), 1):reverse()
+			table[form] = table[form]:gsub(root, repl)
+		end
+	end		
+
+	-- handle 'go' verbs
+	if contains(lookup.go, verb) then
+		if ctype(root:sub(-1)) == "consonant" then
+			table.yo = root .. "go"
+		else
+			table.yo = root .. "igo"
 		end
 	end
-	
-	-- change the stem
-	for _, form in pairs({"yo", "tu", "ud", "uds"}) do
-		local repl = root:reverse():gsub(change[1]:reverse(), change[2]:reverse(), 1):reverse()
-		table[form] = table[form]:gsub(root, repl)
-	end
-end		
 
--- handle 'go' verbs
-if contains(lookup.go, verb) then
-	if ctype(root:sub(-1)) == "consonant" then
-		table.yo = root .. "go"
-	else
-		table.yo = root .. "igo"
+	-- handle a full replace (eg ser in present tense)
+	for form in pairs(table) do
+		if lookup.raw[verb] then
+			table[form] = lookup.raw[verb][form] or table[form]
+		end
 	end
+
+	print("")
+	print(table.yo, " " .. table.nos)
+	print(table.tu, " " .. table.vos)
+	print(table.ud, " " .. table.uds)
+	print("")
 end
-
--- handle a full replace (eg ser in present tense)
-for form in pairs(table) do
-	if lookup.raw[verb] then
-		table[form] = lookup.raw[verb][form] or table[form]
-	end
-end
-
-print("")
-print(table.yo, " " .. table.nos)
-print(table.tu, " " .. table.vos)
-print(table.ud, " " .. table.uds)
-print("")
