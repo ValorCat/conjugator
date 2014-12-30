@@ -70,12 +70,12 @@ local verb_data = {
 local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atraversar', 'calentar', 'cerrar', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demostrar', 'despedir', 'despertar', 'devolver', 'divertir', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'herir', 'hervir', 'impedir', 'medir', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recordar', 'regar', 'repetir', 'resolver', 'rogar', 'seguir', 'soler', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'tropezar', 'venir', 'verter'}
 
 local tenses = {
-	pres = {'', 'pres', 'present', 'presente'};
-	pret = {'p', 'pret', 'past', 'pasado', 'preterit', 'preterite', 'preterito', 'pretérito'};
-	imp = {'i', 'imp', 'imperfect', 'imperfecto'};
-	fut = {'f', 'fut', 'future', 'futuro'};
-	con = {'c', 'con', 'cond', 'conditional', 'condicional'};
-	subj = {'s', 'sub', 'subj', 'subjunctive', 'subjunctivo'}; }
+	pres = {' ', 'pres', 'present', 'presente', 'present indicative'};
+	pret = {'p', 'pret', 'past', 'pasado', 'preterit', 'preterite', 'preterito', 'pretérito', 'past perfect indicative'};
+	imp = {'i', 'imp', 'imperfect', 'imperfecto', 'past imperfect indicative'};
+	fut = {'f', 'fut', 'future', 'futuro', 'future indicative'};
+	con = {'c', 'con', 'cond', 'conditional', 'condicional', 'conditional mode'};
+	subj = {'s', 'sub', 'subj', 'subjunctive', 'subjunctivo', 'present subjunctive'}; }
 
 -- replaces accented chars with normal counterparts
 local function noacc(str)
@@ -119,240 +119,260 @@ local function gsubrev(str, patt, repl, num)
 end
 
 -- verifies input ends with given substring
-local function suffix(str, suff)
-	return str:sub(0 - #suff) == suff
-end
-
-print('')
-io.write('Enter a tense: ')
-local raw_tense = io.read()
-local forms = {}
-print('')
-
--- verify tense
-do
-	local found = false
-	for internal, list in pairs(tenses) do
-		for _, possible in pairs(list) do
-			if raw_tense == possible then
-				raw_tense = internal
-				found = true
-			end
+local function suffix(str, ...)
+	for _, suff in ipairs({...}) do
+		if str:sub(0 - #suff) == suff then
+			return true
 		end
 	end
-	if not found then
-		print('Invalid tense!')
-		return false
-	end
+	return false
 end
-local tense = verb_data[raw_tense]
 
 while true do
-	io.write('Enter a verb: ')
-	local verb = io.read()
-	if verb == "" then
-		break
-	end
-	
-	-- check if reflexive
-	local reflex = false
-	if verb:sub(-3) == 'rse' then
-		verb = verb:sub(1, -3)
-		reflex = true
-	end
-	
-	-- verify verb is in infinitive
-	local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
-	if (verb_type ~= 'ar') and (verb_type ~= 'er') and (verb_type ~= 'ir') then
-		print('Verb must be in the infinitive!')
-		return false
-	end
-	
-	-- accommodate the future and conditional's use of infinitive
-	local root = verb:sub(1, -3)
-	if tense.use_inf then
-		root = verb
-	end
 
-	-- get default suffix
-	for _, form in pairs({'yo', 'tu', 'ud', 'nos', 'vos', 'uds'}) do
+	-- get the tense/mood
+	io.write('\nEnter a tense: ')
+	local raw_tense = io.read()
+	local forms = {}
+
+	-- verify tense
+	do
+		if raw_tense == "" then
+			break
+		end
 		
-		-- inheritance ('ir' defaults to 'er' defaults to 'ar')
-		local continue = false
-		for _, current in pairs({'ir', 'er', 'ar'}) do
-			if (current == verb_type) or continue then
-				
-				-- search for the suffix in current subtable
-				local conj = tense[current][form]
-				
-				-- if it is defined here, use it
-				if conj then
-					forms[form] = root .. conj
-					continue = false
-				
-				-- if it is not defined here, default to the next subtable
-				else
-					continue = true
+		local found = false
+		for internal, list in pairs(tenses) do
+			for _, possible in pairs(list) do
+				if raw_tense == possible then
+					raw_tense = internal
+					found = true
 				end
 			end
 		end
+		
+		if not found then
+			print('Invalid tense!')
+			return false
+		end
 	end
 
-	-- handle stem changers (eg pres. pensar -> piensa)
-	if tense.stem and contains(stem, verb) then
+	local tense = verb_data[raw_tense]
+	print(string.format('Using: %s\n', tenses[raw_tense][#tenses[raw_tense]]))
+	print('Enter a verb:')
+	while true do
 		
-		-- present tense (e->ie, e->i, o->ue)
-		if tense.stem == 'full' then
-			local change = {'e', 'ie'}
+		io.write(' :: ')
+		local verb = io.read()
+		if verb == '' then
+			break
+		end
+		
+		-- check if reflexive
+		local reflex = false
+		if verb:sub(-3) == 'rse' then
+			verb = verb:sub(1, -3)
+			reflex = true
+		end
+		
+		-- verify verb is in infinitive
+		local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
+		if (verb_type ~= 'ar') and (verb_type ~= 'er') and (verb_type ~= 'ir') then
+			print('Verb must be in the infinitive!')
+			return false
+		end
+		
+		-- accommodate the future and conditional's use of infinitive
+		local root = verb:sub(1, -3)
+		if tense.use_inf then
+			root = verb
+		end
+
+		-- get root and default suffix
+		for _, form in pairs({'yo', 'tu', 'ud', 'nos', 'vos', 'uds'}) do
 			
-			-- if ending in 'edir', 'etir', or 'eguir'
-			if suffix(verb, 'edir') or suffix(verb, 'etir') or suffix(verb, 'eguir') then
-				change = {'e', 'i'}
-			end
-			
-			-- if penultimate vowel is 'o'
-			for i = #root, 1, -1 do
-				local char = verb:sub(i, i)
-				if ctype(char) == 'vowel' then
-					if char == 'o' then
-						change = {'o', 'ue'}
+			-- inheritance ('ir' defaults to 'er' defaults to 'ar')
+			local continue = false
+			for _, current in pairs({'ir', 'er', 'ar'}) do
+				if (current == verb_type) or continue then
+					
+					-- search for the suffix in current subtable
+					local conj = tense[current][form]
+					
+					-- if it is defined here, use it
+					if conj then
+						forms[form] = root .. conj
+						continue = false
+					
+					-- if it is not defined here, default to the next subtable
+					else
+						continue = true
 					end
-					break
 				end
 			end
+		end
+
+		-- handle stem changers (eg pres. pensar -> piensa)
+		if tense.stem and contains(stem, verb) then
 			
-			-- change the stem
-			for _, form in pairs({'yo', 'tu', 'ud', 'uds'}) do
+			-- present tense (e->ie, e->i, o->ue)
+			if tense.stem == 'full' then
+				local change = {'e', 'ie'}
+				
+				-- if ending in 'edir', 'etir', or 'eguir'
+				if suffix(verb, 'edir', 'etir', 'eguir') then
+					change = {'e', 'i'}
+				end
+				
+				-- if penultimate vowel is 'o'
+				for i = #root, 1, -1 do
+					local char = verb:sub(i, i)
+					if ctype(char) == 'vowel' then
+						if char == 'o' then
+							change = {'o', 'ue'}
+						end
+						break
+					end
+				end
+				
+				-- change the stem
+				for _, form in pairs({'yo', 'tu', 'ud', 'uds'}) do
+					local repl = gsubrev(root, change[1], change[2], 1)
+					forms[form] = forms[form]:gsub(root, repl)
+				end
+			
+			-- preterite (e->i, o->u)
+			elseif (tense.stem == 'partial') and (verb_type == 'ir') then
+				local change = {'e', 'i'}
+				
+				-- if penultimate vowel is 'o'
+				for i = #root, 1, -1 do
+					local char = verb:sub(i, i)
+					if ctype(char) == 'vowel' then
+						if char == 'o' then
+							change = {'o', 'u'}
+						end
+						break
+					end
+				end
+				
+				-- change the stem
 				local repl = gsubrev(root, change[1], change[2], 1)
-				forms[form] = forms[form]:gsub(root, repl)
+				forms.ud = forms.ud:gsub(root, repl)
+				forms.uds = forms.ud:gsub(root, repl)
 			end
+		end		
 		
-		-- preterite (e->i, o->u)
-		elseif (tense.stem == 'partial') and (verb_type == 'ir') then
-			local change = {'e', 'i'}
+		-- handle preterite root changers (eg tener -> tuvo)
+		if tense.root then
+			if tense.root[verb] then
+				for form in pairs(forms) do
+					forms[form] = tense.root[verb] .. tense.rr[form]
+				end
+			end
+		end
+		
+		-- handle 'go' verbs (eg pres. tener)
+		if contains(tense.go, verb) then
+			if ctype(root:sub(-1)) == 'consonant' then
+				forms.yo = root .. 'go'
+			else
+				forms.yo = root .. 'igo'
+			end
+		end
+		
+		-- handle car, gar, zar (eg pret. jugar)
+		if tense.cgz and suffix(verb, 'car', 'gar', 'zar') then
+			local char = verb:sub(-3, -3)
+			local suff = tense.ar.yo
+			local change = {'c', 'qu'}
+			if char == 'g' then
+				change = {'g', 'gu'}
+			elseif char == 'z' then
+				change = {'z', 'c'}
+			end
+			forms.yo = gsubrev(forms.yo, change[1] .. suff, change[2] .. suff, 1)
+		end
+		
+		-- handle g -> j (eg pres. escoger)
+		if suffix(forms.yo, 'go') and suffix(verb, 'ger', 'gir') then
+			forms.yo = gsubrev(forms.yo, 'go', 'jo', 1)
+		end
+		
+		-- handle gu -> g (eg pres. seguir)
+		if tense.guir and suffix(verb, 'guir') then
+			forms.yo = gsubrev(forms.yo, 'guo', 'go', 1)
+		end
+		
+		-- handle adding 'y' (eg pres. incluir, pret. creer)
+		if tense.yrule then
 			
-			-- if penultimate vowel is 'o'
-			for i = #root, 1, -1 do
-				local char = verb:sub(i, i)
-				if ctype(char) == 'vowel' then
-					if char == 'o' then
-						change = {'o', 'u'}
+			-- add 'y' before a, e, and o
+			if (tense.yrule == 'full') and (suffix(verb, 'uir') and not suffix(verb, 'guir')) then
+				for form in pairs(forms) do
+					forms[form] = forms[form]:gsub('u([aeo])', 'uy%1', 1)
+				end
+			
+			-- add 'y' in both 3rd person forms
+			elseif (tense.yrule == 'partial') then
+				
+				-- just add 'y'
+				if suffix(verb, 'uir') then
+					forms.ud = forms.ud:gsub(tense.er.ud, tense.yir.ud)
+					forms.uds = forms.uds:gsub(tense.er.uds, tense.yir.uds)
+				
+				-- add accents to forms without 'y'
+				elseif (suffix(verb, 'aer') and (verb ~= 'traer')) or suffix(verb, 'eer') or suffix(verb, 'oir') or suffix(verb, 'oír') or suffix(verb, 'oer') then
+					for form in pairs(tense.yir) do
+						forms[form] = forms[form]:gsub(tense.er[form], tense.yir[form])
 					end
-					break
-				end
-			end
-			
-			-- change the stem
-			local repl = gsubrev(root, change[1], change[2], 1)
-			forms.ud = forms.ud:gsub(root, repl)
-			forms.uds = forms.ud:gsub(root, repl)
-		end
-	end		
-	
-	-- handle preterite root changers (eg tener -> tuvo)
-	if tense.root then
-		if tense.root[verb] then
-			for form in pairs(forms) do
-				forms[form] = tense.root[verb] .. tense.rr[form]
-			end
-		end
-	end
-	
-	-- handle 'go' verbs (eg pres. tener)
-	if contains(tense.go, verb) then
-		if ctype(root:sub(-1)) == 'consonant' then
-			forms.yo = root .. 'go'
-		else
-			forms.yo = root .. 'igo'
-		end
-	end
-	
-	-- handle car, gar, zar (eg pret. jugar)
-	if tense.cgz and (suffix(verb, 'car') or suffix(verb, 'gar') or suffix(verb, 'zar')) then
-		local char = verb:sub(-3, -3)
-		local suff = tense.ar.yo
-		local change = {"c", "qu"}
-		if char == "g" then
-			change = {"g", "gu"}
-		elseif char == "z" then
-			change = {"z", "c"}
-		end
-		forms.yo = gsubrev(forms.yo, change[1] .. suff, change[2] .. suff, 1)
-	end
-	
-	-- handle g -> j (eg pres. escoger)
-	if suffix(forms.yo, 'go') and (suffix(verb, 'ger') or suffix(verb, 'gir')) then
-		forms.yo = gsubrev(forms.yo, 'go', 'jo', 1)
-	end
-	
-	-- handle gu -> g (eg pres. seguir)
-	if tense.guir and suffix(verb, 'guir') then
-		forms.yo = gsubrev(forms.yo, 'guo', 'go', 1)
-	end
-	
-	-- handle adding 'y' (eg pres. incluir, pret. creer)
-	if tense.yrule then
-		
-		-- add 'y' before a, e, and o
-		if (tense.yrule == 'full') and (suffix(verb, 'uir') and not suffix(verb, 'guir')) then
-			for form in pairs(forms) do
-				forms[form] = forms[form]:gsub('u([aeo])', 'uy%1', 1)
-			end
-		
-		-- add 'y' in both 3rd person forms
-		elseif (tense.yrule == 'partial') then
-			
-			-- just add 'y'
-			if suffix(verb, 'uir') then
-				forms.ud = forms.ud:gsub(tense.er.ud, tense.yir.ud)
-				forms.uds = forms.uds:gsub(tense.er.uds, tense.yir.uds)
-			
-			-- add accents to forms without 'y'
-			elseif (suffix(verb, 'aer') and (verb ~= 'traer')) or suffix(verb, 'eer') or suffix(verb, 'oir') or suffix(verb, 'oír') or suffix(verb, 'oer') then
-				for form in pairs(tense.yir) do
-					forms[form] = forms[form]:gsub(tense.er[form], tense.yir[form])
 				end
 			end
 		end
-	end
-	
-	-- handle the z rule (eg pres. conocer)
-	if tense.zrule and ((verb:sub(-3) == 'cer') or (verb:sub(-3) == 'cir')) then
-		local chartype = ctype(verb:sub(-4, -4))
-		if chartype == 'consonant' then
-			forms.yo = gsubrev(forms.yo, 'c', 'z', 1)
-		elseif (chartype == 'vowel') and (verb ~= 'decir') and (verb ~= 'hacer') then
-			forms.yo = gsubrev(forms.yo, 'c', 'zc', 1)
-		end
-	end
-	
-	-- handle full replaces (eg pres. ser)
-	if tense.raw then
-		for form in pairs(forms) do
-			if tense.raw[verb] then
-				forms[form] = tense.raw[verb][form] or forms[form]
+		
+		-- handle the z rule (eg pres. conocer)
+		if tense.zrule and suffix(verb, 'cer', 'cir') then
+			local chartype = ctype(verb:sub(-4, -4))
+			if chartype == 'consonant' then
+				forms.yo = gsubrev(forms.yo, 'c', 'z', 1)
+			elseif (chartype == 'vowel') and (verb ~= 'decir') and (verb ~= 'hacer') then
+				forms.yo = gsubrev(forms.yo, 'c', 'zc', 1)
 			end
 		end
-	end
-	
-	-- add reflexive pronouns
-	if reflex then
-		local pronouns = {yo = 'me', tu = 'te', ud = 'se', nos = 'nos', vos = 'os', uds = 'se'}
-		for form in pairs(forms) do
-			forms[form] = string.format('%s %s', pronouns[form], forms[form])
+		
+		-- handle full replaces (eg pres. ser)
+		if tense.raw then
+			for form in pairs(forms) do
+				if tense.raw[verb] then
+					forms[form] = tense.raw[verb][form] or forms[form]
+				end
+			end
+		end
+		
+		-- add reflexive pronouns
+		if reflex then
+			local pronouns = {yo = 'me', tu = 'te', ud = 'se', nos = 'nos', vos = 'os', uds = 'se'}
+			for form in pairs(forms) do
+				forms[form] = string.format('%s %s', pronouns[form], forms[form])
+			end
+		end
+		
+		-- ensure alignment of forms (console automoves column if more than 7 chars)
+		if (#forms.yo > 7) or (#forms.tu > 7) or (#forms.ud > 7) then
+			for _, entry in pairs({'yo', 'tu', 'ud'}) do
+				forms[entry] = forms[entry] .. string.rep(' ', 9 - #forms[entry])
+			end
+		end
+		
+		-- display the finished verb chart
+		do
+			print('')
+			print(forms.yo, forms.nos)
+			print(forms.tu, forms.vos)
+			print(forms.ud, forms.uds)
+			print('')
 		end
 	end
-	
-	-- ensure alignment of forms (console automoves column if more than 7 chars)
-	if (#forms.yo > 7) or (#forms.tu > 7) or (#forms.ud > 7) then
-		for _, entry in pairs({'yo', 'tu', 'ud'}) do
-			forms[entry] = forms[entry] .. string.rep(' ', 9 - #forms[entry])
-		end
-	end
-	
-	print('')
-	print(forms.yo, forms.nos)
-	print(forms.tu, forms.vos)
-	print(forms.ud, forms.uds)
-	print('')
 end
+
+print('')
