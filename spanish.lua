@@ -103,6 +103,7 @@ end
 print('')
 io.write('Enter a tense: ')
 local tense = io.read()
+local table = {}
 print('')
 
 -- verify tense
@@ -126,10 +127,19 @@ local lookup = verb_data[tense]
 while 1 do
 	io.write('Enter a verb: ')
 	local verb = io.read()
-	local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
-	local table = {}
+	if verb == "" then
+		break
+	end
+	
+	-- check if reflexive
+	local reflex = false
+	if verb:sub(-3) == 'rse' then
+		verb = verb:sub(1, -3)
+		reflex = true
+	end
 	
 	-- verify verb is in infinitive
+	local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
 	if (verb_type ~= 'ar') and (verb_type ~= 'er') and (verb_type ~= 'ir') then
 		print('Verb must be in the infinitive!')
 		return false
@@ -234,6 +244,14 @@ while 1 do
 			if lookup.raw[verb] then
 				table[form] = lookup.raw[verb][form] or table[form]
 			end
+		end
+	end
+	
+	-- add reflexive pronouns
+	if reflex then
+		local pronouns = {yo = 'me', tu = 'te', ud = 'se', nos = 'nos', vos = 'os', uds = 'se'}
+		for form in pairs(table) do
+			table[form] = string.format("%s %s", pronouns[form], table[form])
 		end
 	end
 	
