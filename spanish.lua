@@ -5,10 +5,13 @@ local verb_data = {
 		ar = {yo = 'o', tu = 'as', ud = 'a', nos = 'amos', vos = 'áis', uds = 'an'};
 		er = {tu = 'es', ud = 'e', nos = 'emos', vos = 'éis', uds = 'en'};
 		ir = {nos = 'imos', vos = 'ís'};
-		stem = 'full';
+		stem = {'yo', 'tu', 'ud', 'uds'};
+		stem_type = 'full';
+		go = {'yo'};
+		go_list = {'caer', 'poner', 'salir', 'traer', 'valer'};
 		guir = true;
 		yrule = 'full';
-		zrule = true;
+		zrule = {'yo'};
 		raw = {
 			caber = {yo = 'quepo'};
 			dar = {yo = 'doy', vos = 'dais'};
@@ -21,9 +24,10 @@ local verb_data = {
 			saber = {yo = 'sé'};
 			ser = {yo = 'soy', tu = 'eres', ud = 'es', nos = 'somos', vos = 'sois', uds = 'son'};
 			servir = {yo = 'sirvo', tu = 'sirves', ud = 'sirve', uds = 'sirven'};
+			tener = {yo = 'tengo'};
+			venir = {yo = 'vengo'};
 			ver = {yo = 'veo'};
-			vestir = {yo = 'visto', tu = 'vistes', ud = 'viste', uds = 'visten'}; };
-		go = {'caer', 'poner', 'salir', 'tener', 'tostar', 'traer', 'valer', 'venir', 'volar', 'volver'}; };
+			vestir = {yo = 'visto', tu = 'vistes', ud = 'viste', uds = 'visten'}; }; };
 	-- past preterite
 	pret = {
 		ar = {yo = 'é', tu = 'aste', ud = 'ó', nos = 'amos', vos = 'asteis', uds = 'aron'};
@@ -31,7 +35,8 @@ local verb_data = {
 		ir = {};
 		rr = {yo = 'e', tu = 'iste', ud = 'o', nos = 'imos', vos = 'isteis', uds = 'ieron'};
 		yir = {yo = 'í', tu = 'íste', ud = 'yó', nos = 'ímos', vos = 'ísteis', uds = 'yeron'};
-		stem = 'partial';
+		stem = {'ud', 'uds'};
+		stem_type = 'partial';
 		yrule = 'partial';
 		cgz = true;
 		root = {andar = 'anduv', caber = 'cup', dar = 'd', haber = 'hub', hacer = 'hic', ir = 'fu', estar = 'estuv', poder = 'pud', poner = 'pus', querer = 'quis', saber = 'sup', ser = 'fu', tener = 'tuv', venir = 'vin'};
@@ -61,14 +66,26 @@ local verb_data = {
 		ar = {yo = 'ía', tu = 'ías', ud = 'ía', nos = 'íamos', vos = 'íais', uds = 'ían'};
 		er = {};
 		ir = {};
-		use_inf = true; };
+		use_inf = true;
+		root = {caber = 'cabr', decir = 'dir', haber = 'habr', hacer = 'har', poder = 'podr', poner = 'pondr', querer = 'quierr', saber = 'sabr', salir = 'saldr', tener = 'tendr', valer = 'valdr', venir = 'vendr'}; };
 	-- present subjunctive
 	subj = {
 		ar = {yo = 'e', tu = 'es', ud = 'e', nos = 'emos', vos = 'éis', uds = 'en'};
 		er = {yo = 'a', tu = 'as', ud = 'a', nos = 'amos', vos = 'áis', uds = 'an'};
-		ir = {}; }; }
+		ir = {};
+		stem = {'yo', 'tu', 'ud', 'uds'};
+		stem_type = 'combo';
+		guir = true;
+		yrule = 'full';
+		zrule = {'yo', 'tu', 'ud', 'nos', 'vos', 'uds'};
+		cgz = true;
+		raw = {
+			dar = {yo = 'dé', ud = 'dé', vos = 'deis'};
+			estar = {yo = 'esté', tu = 'estés', ud = 'esté', uds = 'estén'};
+			jugar = {yo = 'juege', tu = 'jueges', ud = 'juege', uds = 'juegen'}; };
+		root = {caber = 'quep', caer = 'caig', decir = 'dig', hacer = 'hag', ir = 'vay', mecer = 'mezc', poner = 'pong', saber = 'sep', salir = 'salg', ser = 'se', servir = 'sirv', tener = 'teng', traer = 'traig', valer = 'valg', venir = 'veng', ver = 've', vestir = 'vist'}; }; }
 
-local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atraversar', 'calentar', 'cerrar', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demostrar', 'despedir', 'despertar', 'devolver', 'divertir', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'herir', 'hervir', 'impedir', 'medir', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recordar', 'regar', 'repetir', 'resolver', 'rogar', 'seguir', 'soler', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'tropezar', 'venir', 'verter'}
+local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atraversar', 'calentar', 'cerrar', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demostrar', 'despedir', 'despertar', 'devolver', 'divertir', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'herir', 'hervir', 'impedir', 'medir', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recordar', 'regar', 'repetir', 'resolver', 'rogar', 'seguir', 'sentir', 'soler', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'tostar', 'tropezar', 'venir', 'verter', 'volar', 'volver'}
 
 local tenses = {
 	pres = {' ', 'pres', 'present', 'presente', 'present indicative'};
@@ -221,95 +238,115 @@ while true do
 
 				-- handle stem changers (eg pres. pensar -> piensa)
 				if tense.stem and contains(stem, verb) then
+					local change, change2 = {'e', 'ie'}, false
 					
-					-- present tense (e->ie, e->i, o->ue)
-					if tense.stem == 'full' then
-						local change = {'e', 'ie'}
+					-- avoid conflicts with subjunctive root changes
+					tense.root = tense.root or {}
+					if not tense.root[verb] then
 						
-						-- if ending in 'edir', 'etir', or 'eguir'
-						if suffix(verb, 'edir', 'etir', 'eguir') then
-							change = {'e', 'i'}
-						end
-						
-						-- if penultimate vowel is 'o'
-						for i = #root, 1, -1 do
-							local char = verb:sub(i, i)
-							if ctype(char) == 'vowel' then
-								if char == 'o' then
-									change = {'o', 'ue'}
+						-- present and subjunctive (e->ie, e->i, o->ue)
+						if (tense.stem_type == 'full') or (tense.stem_type == 'combo') then
+							
+							-- if specific suffix
+							if suffix(verb, 'edir', 'etir', 'egir', 'eguir') then
+								change = {'e', 'i'}
+							end
+							
+							-- if penultimate vowel is 'o'
+							for i = #root, 1, -1 do
+								local char = verb:sub(i, i)
+								if ctype(char) == 'vowel' then
+									if char == 'o' then
+										change = {'o', 'ue'}
+									end
+									break
 								end
-								break
+							end
+							
+							-- subjunctive (preterite-like stem change in nos, vos)
+							if (tense.stem_type == 'combo') and (verb_type == 'ir') then
+								local repl = gsubrev(root, change[1], change[1] == 'e' and 'i' or 'u', 1)
+								forms.nos = forms.nos:gsub(root, repl)
+								forms.vos = forms.vos:gsub(root, repl)
+							end
+						
+						-- preterite (e->i, o->u)
+						elseif (tense.stem_type == 'partial') and (verb_type == 'ir') then
+							change = {'e', 'i'}
+							
+							-- if penultimate vowel is 'o'
+							for i = #root, 1, -1 do
+								local char = verb:sub(i, i)
+								if ctype(char) == 'vowel' then
+									if char == 'o' then
+										change = {'o', 'u'}
+									end
+									break
+								end
 							end
 						end
-						
+					
 						-- change the stem
-						for _, form in pairs({'yo', 'tu', 'ud', 'uds'}) do
+						for _, form in pairs(tense.stem) do
 							local repl = gsubrev(root, change[1], change[2], 1)
 							forms[form] = forms[form]:gsub(root, repl)
 						end
-					
-					-- preterite (e->i, o->u)
-					elseif (tense.stem == 'partial') and (verb_type == 'ir') then
-						local change = {'e', 'i'}
-						
-						-- if penultimate vowel is 'o'
-						for i = #root, 1, -1 do
-							local char = verb:sub(i, i)
-							if ctype(char) == 'vowel' then
-								if char == 'o' then
-									change = {'o', 'u'}
-								end
-								break
-							end
-						end
-						
-						-- change the stem
-						local repl = gsubrev(root, change[1], change[2], 1)
-						forms.ud = forms.ud:gsub(root, repl)
-						forms.uds = forms.ud:gsub(root, repl)
 					end
 				end		
 				
 				-- handle root changers (eg pret. tener -> tuvo, fut. haber -> habrá)
 				if tense.root then
-					local endings = tense.rr or tense.ar
 					if tense.root[verb] then
 						for form in pairs(forms) do
-							forms[form] = tense.root[verb] .. endings[form]
+							if tense.rr then
+								forms[form] = tense.root[verb] .. tense.rr[form]
+							else
+								forms[form] = forms[form]:gsub(root, tense.root[verb], 1)
+							end
 						end
 					end
 				end
 				
 				-- handle 'go' verbs (eg pres. tener)
-				if contains(tense.go, verb) then
-					if ctype(root:sub(-1)) == 'consonant' then
-						forms.yo = root .. 'go'
-					else
-						forms.yo = root .. 'igo'
+				if contains(tense.go_list, verb) then
+					local add = 'g'
+					if ctype(root:sub(-1)) == 'vowel' then
+						add = 'ig'
+					end
+					for _, form in pairs(tense.go) do
+						forms[form] = forms[form]:gsub(root, root .. add, 1)
 					end
 				end
 				
 				-- handle car, gar, zar (eg pret. jugar)
 				if tense.cgz and suffix(verb, 'car', 'gar', 'zar') then
 					local char = verb:sub(-3, -3)
-					local suff = tense.ar.yo
 					local change = {'c', 'qu'}
 					if char == 'g' then
 						change = {'g', 'gu'}
 					elseif char == 'z' then
 						change = {'z', 'c'}
 					end
-					forms.yo = gsubrev(forms.yo, change[1] .. suff, change[2] .. suff, 1)
+					for form in pairs(forms) do
+						forms[form] = gsubrev(forms[form], change[1] .. 'é', change[2] .. 'é', 1)
+						forms[form] = gsubrev(forms[form], change[1] .. 'e', change[2] .. 'e', 1)
+					end
 				end
 				
 				-- handle g -> j (eg pres. escoger)
-				if suffix(forms.yo, 'go') and suffix(verb, 'ger', 'gir') then
-					forms.yo = gsubrev(forms.yo, 'go', 'jo', 1)
+				if suffix(verb, 'ger', 'gir') then
+					for form in pairs(forms) do
+						forms[form] = forms[form]:gsub('g([ao])', 'j%1')
+					end
+					forms.vos = forms.vos:gsub('gá', 'já') -- lua accent quirk?
 				end
 				
 				-- handle gu -> g (eg pres. seguir)
 				if tense.guir and suffix(verb, 'guir') then
-					forms.yo = gsubrev(forms.yo, 'guo', 'go', 1)
+					for form in pairs(forms) do
+						forms[form] = forms[form]:gsub('gu([ao])', 'g%1')
+					end
+					forms.vos = forms.vos:gsub('guá', 'gá') -- lua accent quirk?
 				end
 				
 				-- handle adding 'y' (eg pres. incluir, pret. creer)
@@ -318,7 +355,9 @@ while true do
 					-- add 'y' before a, e, and o
 					if (tense.yrule == 'full') and (suffix(verb, 'uir') and not suffix(verb, 'guir')) then
 						for form in pairs(forms) do
-							forms[form] = forms[form]:gsub('u([aeo])', 'uy%1', 1)
+							forms[form] = forms[form]:gsub('u([aeo])', 'uy%1')
+							forms[form] = forms[form]:gsub('uá', 'uyá')
+							forms[form] = forms[form]:gsub('ué', 'uyé')
 						end
 					
 					-- add 'y' in both 3rd person forms
@@ -338,13 +377,15 @@ while true do
 					end
 				end
 				
-				-- handle the z rule (eg pres. conocer)
+				-- handle adding 'z' (eg pres. conocer)
 				if tense.zrule and suffix(verb, 'cer', 'cir') then
 					local chartype = ctype(verb:sub(-4, -4))
-					if chartype == 'consonant' then
-						forms.yo = gsubrev(forms.yo, 'c', 'z', 1)
-					elseif (chartype == 'vowel') and (verb ~= 'decir') and (verb ~= 'hacer') then
-						forms.yo = gsubrev(forms.yo, 'c', 'zc', 1)
+					local change = 'z'
+					if (chartype == 'vowel') and (verb ~= 'decir') and (verb ~= 'hacer') then
+						change = 'zc'
+					end
+					for _, form in pairs(tense.zrule) do
+						forms[form] = gsubrev(forms[form], 'c', change, 1)
 					end
 				end
 				
