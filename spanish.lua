@@ -87,6 +87,14 @@ local verb_data = {
 
 local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atraversar', 'calentar', 'cerrar', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demostrar', 'despedir', 'despertar', 'devolver', 'divertir', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'herir', 'hervir', 'impedir', 'medir', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recordar', 'regar', 'repetir', 'resolver', 'rogar', 'seguir', 'sentir', 'soler', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'tostar', 'tropezar', 'venir', 'verter', 'volar', 'volver'}
 
+local info = {
+	pres = {'habitual actions: me levanto a las siete', 'current events: ¿qué haces?', 'simple truths: me gusta el chocolate'};
+	pret = {'completed event: compré un coche nuevo', 'starts and endings: empezó la carrera'};
+	imp = {'former habitual actions: almorzábamos cada día', 'describing past scenes: hacía calor esa noche', 'past times and dates: era la una en viernes', 'past emotions and desires: sentía feliz con el trabajo nuevo'};
+	fut = {'future actions and events: viajaré a los estados unidos', 'potential events: estará hablando con su novia'};
+	con = {'dependent events: llamaría al doctor si estás herido'};
+	subj = {'subjective events: es posible que estés correcto', 'doubts and emotions: dudo que la tarea sea completa', 'wishes and recommendations: quiere que lea el libro'}; }
+
 local tenses = {
 	pres = {' ', 'pres', 'present', 'presente', 'present indicative'};
 	pret = {'p', 'pret', 'past', 'pasado', 'preterit', 'preterite', 'preterito', 'pretérito', 'past perfect indicative'};
@@ -156,7 +164,7 @@ while true do
 
 	-- verify tense
 	do
-		if raw_tense == "" then
+		if raw_tense == '' then
 			break
 		end
 		
@@ -179,28 +187,42 @@ while true do
 	if not skip then
 		local tense = verb_data[raw_tense]
 		print(string.format('Using: %s\n', tenses[raw_tense][#tenses[raw_tense]]))
-		print('Enter a verb:')
+		print('Enter a verb or \'info\':')
 		while true do
 			
 			skip = false
 			io.write(' :: ')
 			local verb = io.read()
+			local reflex, verb_type = false, ''
+			
 			if verb == '' then
 				break
-			end
 			
-			-- check if reflexive
-			local reflex = false
-			if verb:sub(-3) == 'rse' then
-				verb = verb:sub(1, -3)
-				reflex = true
-			end
-			
-			-- verify verb is in infinitive
-			local verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
-			if (verb_type ~= 'ar') and (verb_type ~= 'er') and (verb_type ~= 'ir') then
-				print('Verb must be in the infinitive!\n')
+			-- display info about current tense
+			elseif verb == 'info' then
+				if info[raw_tense] then
+					print(string.format('\nthe %s:', tenses[raw_tense][#tenses[raw_tense]]))
+					for _, line in pairs(info[raw_tense]) do
+						print(string.format('  + %s', line))
+					end
+				else
+					print('No information found for this tense :(\n')
+				end
 				skip = true
+			else
+				
+				-- check if reflexive
+				if suffix(verb, 'se') then
+					verb = verb:sub(1, -3)
+					reflex = true
+				end
+				
+				-- verify verb is in infinitive
+				verb_type = noacc(verb:sub(-2)) -- 'ar', 'er', or 'ir'
+				if (verb_type ~= 'ar') and (verb_type ~= 'er') and (verb_type ~= 'ir') then
+					print('Verb must be in the infinitive!\n')
+					skip = true
+				end
 			end
 			
 			-- conjugate!
