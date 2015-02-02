@@ -21,7 +21,7 @@ local verb_data = {
 			ir = {yo = 'voy', tu = 'vas', ud = 'va', nos = 'vamos', vos = 'vais', uds = 'van'};
 			jugar = {yo = 'juego', tu = 'juegas', ud = 'juega', uds = 'juegan'};
 			mecer = {yo = 'mezco'};
-			oler = {yo = 'huelo', tu = 'hueles', 'huele', uds = 'huelen'}
+			oler = {yo = 'huelo', tu = 'hueles', 'huele', uds = 'huelen'};
 			saber = {yo = 'sé'};
 			ser = {yo = 'soy', tu = 'eres', ud = 'es', nos = 'somos', vos = 'sois', uds = 'son'};
 			servir = {yo = 'sirvo', tu = 'sirves', ud = 'sirve', uds = 'sirven'};
@@ -86,7 +86,7 @@ local verb_data = {
 			jugar = {yo = 'juege', tu = 'jueges', ud = 'juege', uds = 'juegen'}; };
 		root = {caber = 'quep', caer = 'caig', decir = 'dig', hacer = 'hag', ir = 'vay', mecer = 'mezc', poner = 'pong', saber = 'sep', salir = 'salg', ser = 'se', servir = 'sirv', tener = 'teng', traer = 'traig', valer = 'valg', venir = 'veng', ver = 've', vestir = 'vist'}; }; }
 
-local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atraversar', 'calentar', 'cerrar', 'cocer', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demoler', 'demostrar', 'descender', 'despedir', 'despertar', 'devolver', 'divertir', 'doler', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'gobernar', 'helar', 'herir', 'hervir', 'impedir', 'llover', 'medir', 'mendar', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'nevar', 'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recomendar', 'recordar', 'regar', 'remover', 'repetir', 'resolver', 'rogar', 'seguir', 'sentir', 'soler', 'solver', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'torcer', 'tostar', 'tropezar', 'venir', 'verter', 'volar', 'volver'}
+local stem = {'acertar', 'acordar', 'acostar', 'advertir', 'almorzar', 'aprobar', 'atender', 'atravesar', 'calentar', 'cerrar', 'cocer', 'colegir', 'colgar', 'comenzar', 'competir',  'confesar', 'conseguir', 'contar', 'convertir', 'corregir', 'costar', 'defender', 'demoler', 'demostrar', 'descender', 'despedir', 'despertar', 'devolver', 'divertir', 'doler', 'dormir', 'elegir', 'empezar', 'encender', 'encontrar', 'entender', 'enterrar', 'envolver', 'fregar', 'forzar', 'gobernar', 'helar', 'herir', 'hervir', 'impedir', 'llover', 'medir', 'mendar', 'mentir', 'merendar', 'morder', 'morir', 'mostrar', 'mover', 'negar',  'nevar', 'pedir', 'pensar', 'perder', 'perseguir', 'poder', 'preferir', 'probar', 'querer', 'recomendar', 'recordar', 'regar', 'remover', 'repetir', 'resolver', 'rogar', 'seguir', 'sentir', 'soler', 'solver', 'sonar', 'soñar', 'sugerir', 'temblar', 'tender', 'tener', 'torcer', 'tostar', 'tropezar', 'venir', 'verter', 'volar', 'volver'}
 
 local info = {
 	pres = {'habitual actions: me levanto a las siete', 'current events: ¿qué haces?', 'simple truths: me gusta el chocolate'};
